@@ -6,6 +6,7 @@
 	-Moderators can !ban and !kick users, and !unban an IP
 -Have a list of banned users in a text file or something, use for respective banning / unbanning etc.
 -Make packets' payloads encrypted with a basic encryption scheme.
+-Add a !rename command for changing one's nickname
 
 -Improve the Interface with the client, try and make it so that if the window gets resized, the chat window's get re-drawn correctly
 	(Seems to be an issue when testing on a Ubuntu VM. Window gets drawn incorrectly, and messages get drawn twice. Test on other machines to try and track this down better. It could be an issue with a newer version of ncurses, and I might have to update the client code.)
