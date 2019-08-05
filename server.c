@@ -76,18 +76,25 @@ void server() {
   //create TCP socket
   int sock = socket(AF_INET, SOCK_STREAM, 0);
 
+  //ask the user for a port to bind to
+  unsigned short port;
+  printf("Please enter a port: ");
+  scanf("%d", &port);
+
   //specity address and host
   struct sockaddr_in address;
   address.sin_family = AF_INET;
-  address.sin_port = htons(12345);
-  address.sin_addr.s_addr = INADDR_ANY;
+  address.sin_port = htons(port);
+  address.sin_addr.s_addr = htonl(INADDR_ANY);
 
   //bind socket
   if (bind(sock, (struct sockaddr* ) &address, sin_size) < 0) {
-    printf("Error binding socket.\n");
+    printf("Error binding socket. (%d)\n", errno);
     exit(1);
   }
-  printf("Bound\n");
+  char server_ip[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &address.sin_addr, server_ip, INET_ADDRSTRLEN);
+  printf("Bound to address %s\n", server_ip);
 
   //listen for incoming connections
   listen(sock, MAX_CLIENTS);

@@ -17,7 +17,7 @@ void client() {
   int msg_buffer_pos = 0;
   msg_t send_message, recv_message;
 
-  printf("Hello.\n");  
+  printf("Hello.\n");
 
   //set up TCP socket
   int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -26,17 +26,22 @@ void client() {
   char server_ip[INET_ADDRSTRLEN];
   printf("Enter Server IP address: ");
   scanf("%s", server_ip);
-  
+
+  //ask for a port as well
+  unsigned short port;
+  printf("Enter Server port: ");
+  scanf("%d", &port);
+
   //specify address and port
   struct sockaddr_in address;
   address.sin_family = AF_INET;
-  address.sin_port = htons(12345);
-  //address.sin_addr.s_addr = INADDR_ANY;
-  inet_ntop(AF_INET, &address.sin_addr, server_ip, INET_ADDRSTRLEN);
+  address.sin_port = htons(port);
+  inet_pton(AF_INET,  server_ip, &address.sin_addr); //convert the IP string to a number
+  //printf("%d\n", address.sin_addr.s_addr); //for testing
 
   //connect to server
   if (connect(sock, (struct sockaddr* ) &address, sizeof(address)) < 0) {
-    printf("Could not connect to server.\n");
+    printf("Could not connect to server. (%d)\n", errno);
     exit(1);
   }
   printf("Connected.\n");
