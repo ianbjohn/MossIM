@@ -30,7 +30,7 @@ void* client_handler(void* arg) {
     if (recv(((chandler_t* ) arg)->sock, &recv_message, msg_size, MSG_DONTWAIT) == -1) {
       if (errno != EWOULDBLOCK) {
         //something happened besides no data being sent over the socket
-        perror("recv");
+        perror("Error receiving message. (%d)", errno);
         exit(1);
       }
     } else {
@@ -94,7 +94,7 @@ void server() {
   }
   char server_ip[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &address.sin_addr, server_ip, INET_ADDRSTRLEN);
-  printf("Bound to address %s\n", server_ip);
+  printf("Bound.");
 
   //listen for incoming connections
   listen(sock, MAX_CLIENTS);

@@ -5,7 +5,7 @@ For my final project for Computer Networks, I made an IRC-style instant-messagin
 
 This program doesn't even begin to cover all the functionalities of IRC (As in RFC 1459), but as of August 2019 I've returned to the project and am currently working on adding things such as encryption, roles such as Admins/Mods, the ability to promote, ban, and kick users, and improving the interface of the client program.
 
-simply run the program with `./final`, type 0 or 1 for client or server respectively, and specify an IP address and username if you're a client.
+simply run the program with `./final`, type 0 or 1 for client or server respectively, specify a port number, and an IP address and username if you're a client. (NOTE: If you intend on running a server, you may have to set up port forwarding with the port of your choosing if you want the server to be available to the public internet.)
 
 ##### COMMANDS
 - `!leave` - Leave the server
