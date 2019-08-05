@@ -30,7 +30,7 @@ void* client_handler(void* arg) {
     if (recv(((chandler_t* ) arg)->sock, &recv_message, msg_size, MSG_DONTWAIT) == -1) {
       if (errno != EWOULDBLOCK) {
         //something happened besides no data being sent over the socket
-        perror("Error receiving message. (%d)", errno);
+        printf("Error receiving message. (%d)", errno);
         exit(1);
       }
     } else {
