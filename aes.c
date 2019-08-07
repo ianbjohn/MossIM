@@ -31,6 +31,12 @@ void aes_encrypt(byte* plaintext, byte* key) {
   aes_subbytes(state);
   aes_shiftrows(state);
   aes_addroundkey(state, roundkeys[9]);
+
+  //copy state back into plaintext array as ciphertext
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++)
+      plaintext[(i * 4) + j] = state[j][i];
+  }
 }
 
 void aes_decrypt(byte* ciphertext, byte* key) {
@@ -59,6 +65,11 @@ void aes_decrypt(byte* ciphertext, byte* key) {
   }
 
   aes_addroundkey(state, roundkeys[0]);
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++)
+      ciphertext[(i * 4) + j] = state[j][i];
+  }
 }
 
 //step functions
