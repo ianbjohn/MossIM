@@ -9,7 +9,7 @@ LIBPATHS     =
 INCLUDEPATHS =
 
 PROGRAM     = final
-OBJS        = test.o server.o client.o
+OBJS        = test.o server.o client.o aes.o
 
 $(PROGRAM):$(OBJS)
 	$(CC) -o $(PROGRAM) $(LIBPATHS) $(CFLAGS) $(OBJS) $(EXTOBJS) $(LIBS)
