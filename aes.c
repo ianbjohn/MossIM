@@ -70,7 +70,7 @@ void aes_addroundkey(byte** state, byte* roundkey) {
   //XOR each byte of the state with the respective byte of the subkey state
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)
-      state[j][i] ^= roundkey[(i * 4) + j];
+      state[j][i] ^= roundkey[(j * 4) + i];
   }
 }
 
