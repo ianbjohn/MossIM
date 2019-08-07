@@ -90,7 +90,27 @@ void aes_subbytes(byte** state) {
 }
 
 void aes_shiftrows(byte** state) {
+  byte temp;
 
+  //row 1
+  temp = state[1][0];
+  state[1][0] = state[1][1];
+  state[1][1] = state[1][2];
+  state[1][2] = state[1][3];
+  state[1][3] = temp;
+  //row 2
+  temp = state[2][0];
+  state[2][0] = state[2][2];
+  state[2][2] = temp;
+  temp = state[2][1];
+  state[2][1] = state[2][3];
+  state[2][3] = temp;
+  //row 3
+  temp = state[3][3];
+  state[3][3] = state[3][2];
+  state[3][2] = state[3][1];
+  state[3][1] = state[3][0];
+  state[3][0] = temp;
 }
 
 void aes_mixcolumns(byte** state) {
@@ -102,7 +122,27 @@ void aes_invsubbytes(byte** state) {
 }
 
 void aes_invshiftrows(byte** state) {
+  byte temp;
 
+  //row 1
+  temp = state[1][3];
+  state[1][3] = state[1][2];
+  state[1][2] = state[1][1];
+  state[1][1] = state[1][0];
+  state[1][0] = temp;
+  //row 2
+  temp = state[2][2];
+  state[2][2] = state[2][0];
+  state[2][0] = temp;
+  temp = state[2][3];
+  state[2][3] = state[2][1];
+  state[2][1] = temp;
+  //row 3
+  temp = row[3][0];
+  row[3][0] = row[3][1];
+  row[3][1] = row[3][2];
+  row[3][2] = row[3][3];
+  row[3][3] = temp;
 }
 
 void aes_invmixcolumns(byte** state) {
