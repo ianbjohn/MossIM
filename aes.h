@@ -5,6 +5,9 @@
 
 typedef unsigned char byte;
 
+const byte sub_table[256];
+const byte inv_sub_table[256];
+
 void aes_encrypt(byte* plaintext, byte* key);
 void aes_decrypt(byte* ciphertext, byte* key);
 
