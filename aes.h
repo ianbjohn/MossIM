@@ -10,6 +10,8 @@ void aes_decrypt(byte* ciphertext, byte* key);
 
 //step functions
 void aes_keyexpansion(byte* key, byte** roundkeys);
+unsigned int aes_keyexpansion_rotword(unsigned int w); //key expansion helper function
+unsigned int aes_keyexpansion_subword(unsigned int w); //^
 void aes_addroundkey(byte** state, byte* key);
 void aes_subbytes(byte** state);
 void aes_shiftrows(byte** state);
