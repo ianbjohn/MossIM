@@ -155,7 +155,12 @@ unsigned int aes_keyexpansion_rotword(unsigned int w) {
 }
 
 unsigned int aes_keyexpansion_subword(unsigned int w) {
-  //idk what this does yet
+  //replace each byte of the given word with its S-box equivalent
+  byte* sub = (byte* ) &w;
+  sub[0] = SUBTABLE_LOOKUP(sub[0]);
+  sub[1] = SUBTABLE_LOOKUP(sub[1]);
+  sub[2] = SUBTABLE_LOOKUP(sub[2]);
+  sub[3] = SUBTABLE_LOOKUP(sub[3]);
 }
 
 void aes_addroundkey(byte** state, byte* roundkey) {
