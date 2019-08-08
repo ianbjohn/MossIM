@@ -117,10 +117,10 @@ void aes_decrypt(byte* ciphertext, byte* key) {
 
 //step functions
 void aes_keyexpansion(byte* key, byte** roundkeys) {
-  //expand the key into 10 round keys
+  //expand the key into 11 round keys
 
-  //constant LUT (don't quite know what these are for yet)
-  const byte round_counstants[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
+  //round constant LUT
+  const byte round_constants[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 
   //generate the new round keys
   //the general algorithm here works on a single array of integers for all the keys, rather than a 2d array of bytes
@@ -134,7 +134,7 @@ void aes_keyexpansion(byte* key, byte** roundkeys) {
       unsigned int temp = ((unsigned int** ) roundkeys)[(i - 1) / 11][(i - 1) % 4];
       temp = aes_keyexpansion_rotword(temp);
       temp = aes_keyexpansion_subword(temp);
-      ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= temp;
+      ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= (temp ^ round_constants[i / 4]);
     }
     else
       ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= ((unsigned int** ) roundkeys)[(i - 1) / 11][(i - 1) % 4];
