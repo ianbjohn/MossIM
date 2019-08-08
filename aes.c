@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "aes.h"
 
 /** TODO: Convert all the types to their cross-platform "uint32" "uint8" counterparts **/
@@ -116,57 +117,49 @@ void aes_decrypt(byte* ciphertext, byte* key) {
 }
 
 //step functions
-void aes_keyexpansion(byte* key, byte** roundkeys) {
+void aes_keyexpansion(byte* key, byte roundkeys[][16]) {
   //expand the key into 11 round keys
 
   //round constant LUT
-  const unsigned int  round_constants[10] = {0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000,
-                                             0x20000000, 0x40000000, 0x80000000, 0x1B000000, 0x36000000};
+  //technically act as 32-bit words, but with how we've written things, and since only the MSB is nonzero, we can treat these as bytes
+  const byte round_constants[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
 
   //generate the new round keys
-  //the general algorithm here works on a single array of integers for all the keys, rather than a 2d array of bytes
-  //din't want to just copy over what's essentially redundant data and then copy it back, hence all the pointer crazyness 
+  //the general algorithm here works on a single array of integers for all the keys, rather than 2d array of bytes.
+    //A buffer therefore makes things way easier.
   //4 * 11 = 44 words needed for the new keys
   //DEBUG TO MAKE SURE THIS WORKS AS INTENDED!!!!!!!!!!!!!!!!!!!!!!!!
+
+  byte roundkeys_temp[176]; //44 * 4 = 176 bytes needed
+
   for (int i = 0; i < 44; i++) {
-    if (i < 4)
-      ((unsigned int** ) roundkeys)[i / 11][i % 4] = ((unsigned int* ) key)[i];
-    else if (i % 4 == 0) {
-      unsigned int temp = ((unsigned int** ) roundkeys)[(i - 1) / 11][(i - 1) % 4];
-      temp = aes_keyexpansion_rotword(temp);
-      temp = aes_keyexpansion_subword(temp);
-      ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= (temp ^ round_constants[(i / 4) - 1]);
+    if (i < 4) {
+      roundkeys_temp[i * 4] = key[i * 4];
+      roundkeys_temp[(i * 4) + 1] = key[(i * 4) + 1];
+      roundkeys_temp[(i * 4) + 2] = key[(i * 4) + 2];
+      roundkeys_temp[(i * 4) + 3] = key[(i * 4) + 3];
     }
-    else
-      ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= ((unsigned int** ) roundkeys)[(i - 1) / 11][(i - 1) % 4];
+    else if (i % 4 == 0) {
+      //word[i - 4] ^ subword(rotword(word[i - 1]) ^ rconst[i / 4]
+      roundkeys_temp[i * 4] = roundkeys_temp[(i - 4) * 4] ^ SUBTABLE_LOOKUP(roundkeys_temp[((i - 1) * 4) + 1]) ^ round_constants[(i / 4) - 1];
+      roundkeys_temp[(i * 4) + 1] = roundkeys_temp[((i - 4) * 4) + 1] ^ SUBTABLE_LOOKUP(roundkeys_temp[((i - 1) * 4) + 2]);
+      roundkeys_temp[(i * 4) + 2] = roundkeys_temp[((i - 4) * 4) + 2] ^ SUBTABLE_LOOKUP(roundkeys_temp[((i - 1) * 4) + 3]);
+      roundkeys_temp[(i * 4) + 3] = roundkeys_temp[((i - 4) * 4) + 3] ^ SUBTABLE_LOOKUP(roundkeys_temp[(i - 1) * 4]);
+    }
+    else {
+      roundkeys_temp[i * 4] = roundkeys_temp[(i - 4) * 4] ^ roundkeys_temp[(i - 1) * 4];
+      roundkeys_temp[(i * 4) + 1] = roundkeys_temp[((i - 4) * 4) + 1] ^ roundkeys_temp[((i - 1) * 4) + 1];
+      roundkeys_temp[(i * 4) + 2] = roundkeys_temp[((i - 4) * 4) + 2] ^ roundkeys_temp[((i - 1) * 4) + 2];
+      roundkeys_temp[(i * 4) + 3] = roundkeys_temp[((i - 4) * 4) + 3] ^ roundkeys_temp[((i - 1) * 4) + 3];
+    }
   }
+
+  //copy the buffer to the actual roundkeys
+  for (int i = 0; i < 176; i++)
+    roundkeys[i / 16][i % 16] = roundkeys_temp[i];
 }
 
-//key expansion helper functions
-unsigned int aes_keyexpansion_rotword(unsigned int w) {
-  //shifts the bytes of a given 32-bit word to the left
-  byte* rot = (byte* ) &w;
-  byte temp;
-
-  temp = rot[0];
-  rot[0] = rot[1];
-  rot[1] = rot[2];
-  rot[2] = rot[3];
-  rot[3] = temp;
-  return w;
-}
-
-unsigned int aes_keyexpansion_subword(unsigned int w) {
-  //replace each byte of the given word with its S-box equivalent
-  byte* sub = (byte* ) &w;
-  sub[0] = SUBTABLE_LOOKUP(sub[0]);
-  sub[1] = SUBTABLE_LOOKUP(sub[1]);
-  sub[2] = SUBTABLE_LOOKUP(sub[2]);
-  sub[3] = SUBTABLE_LOOKUP(sub[3]);
-  return w;
-}
-
-void aes_addroundkey(byte** state, byte* roundkey) {
+void aes_addroundkey(byte state[][4], byte* roundkey) {
   //XOR each byte of the state with the respective byte of the subkey state
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)
@@ -174,7 +167,7 @@ void aes_addroundkey(byte** state, byte* roundkey) {
   }
 }
 
-void aes_subbytes(byte** state) {
+void aes_subbytes(byte state[][4]) {
   //replace each byte in the state with the S-box entry corresponding to its index
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)
@@ -182,7 +175,7 @@ void aes_subbytes(byte** state) {
   }
 }
 
-void aes_shiftrows(byte** state) {
+void aes_shiftrows(byte state[][4]) {
   byte temp;
 
   //row 1
@@ -206,7 +199,7 @@ void aes_shiftrows(byte** state) {
   state[3][0] = temp;
 }
 
-void aes_mixcolumns(byte** state) {
+void aes_mixcolumns(byte state[][4]) {
   //basic matrix-vector multiplication of each column to diffuse the cipher
   //try and make this parallelizeable
 
@@ -226,14 +219,14 @@ void aes_mixcolumns(byte** state) {
   }
 }
 
-void aes_invsubbytes(byte** state) {
+void aes_invsubbytes(byte state[][4]) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; i < 4; j++)
       state[i][j] = INV_SUBTABLE_LOOKUP(state[i][j]);
   }
 }
 
-void aes_invshiftrows(byte** state) {
+void aes_invshiftrows(byte state[][4]) {
   byte temp;
 
   //row 1
@@ -257,7 +250,7 @@ void aes_invshiftrows(byte** state) {
   state[3][3] = temp;
 }
 
-void aes_invmixcolumns(byte** state) {
+void aes_invmixcolumns(byte state[][4]) {
   //this might need to be altered. Debug and see what happens. We might need to XOR or modulus here.
   byte tempstate[4][4];
 
