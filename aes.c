@@ -207,7 +207,17 @@ void aes_shiftrows(byte** state) {
 }
 
 void aes_mixcolumns(byte** state) {
+  //basic matrix-vector multiplication of each column to diffuse the cipher
+  //try and make this parallelizeable
+  //TODO: should all these operations be done on the ORIGINAL columns, and not while they're being changed by previous operations?
+    //Run a test case just testing this and its inverse to see. This might have to be modified.
 
+  for (int i = 0; i < 4; i++) {
+    state[0][i] = (2 * state[0][i]) ^ (3 * state[1][i]) ^ state[2][i] ^ state[3][i];
+    state[1][i] = state[0][i] ^ (2 & state[1][i]) ^ (3 * state[2][i]) ^ state[3][i];
+    state[2][i] = state[0][i] ^ state[1][i] ^ (2 * state[2][i]) ^ (3 * state[3][i]);
+    state[3][i] = (3 * state[0][i]) ^ state[1][i] ^ state[2][i] ^ (2 * state[3][i]);
+  }
 }
 
 void aes_invsubbytes(byte** state) {
@@ -242,5 +252,11 @@ void aes_invshiftrows(byte** state) {
 }
 
 void aes_invmixcolumns(byte** state) {
-
+  //this might need to be altered. Debug and see what happens. We might need to XOR or modulus here.
+  for (int i = 0; i < 4; i++) {
+    state[0][i] = (14 * state[0][i]) ^ (11 * state[1][i]) ^ (13 * state[2][i]) ^ (9 * state[3][i]);
+    state[1][i] = (9 * state[0][i]) ^ (14 * state[1][i]) ^ (11 * state[2][i]) ^ (13 * state[3][i]);
+    state[2][i] = (13 * state[0][i]) ^ (9 * state[1][i]) ^ (14 * state[2][i]) ^ (11 * state[3][i]);
+    state[3][i] = (11 * state[0][i]) ^ (13 * state[1][i]) ^ (9 * state[2][i]) ^ (14 * state[3][i]);
+  }
 }
