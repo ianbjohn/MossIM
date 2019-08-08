@@ -135,7 +135,7 @@ void aes_keyexpansion(byte* key, byte** roundkeys) {
       unsigned int temp = ((unsigned int** ) roundkeys)[(i - 1) / 11][(i - 1) % 4];
       temp = aes_keyexpansion_rotword(temp);
       temp = aes_keyexpansion_subword(temp);
-      ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= (temp ^ round_constants[i / 4]);
+      ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= (temp ^ round_constants[(i / 4) - 1]);
     }
     else
       ((unsigned int** ) roundkeys)[(i - 4) / 11][(i - 4) % 4] ^= ((unsigned int** ) roundkeys)[(i - 1) / 11][(i - 1) % 4];
