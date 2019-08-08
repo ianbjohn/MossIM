@@ -120,7 +120,8 @@ void aes_keyexpansion(byte* key, byte** roundkeys) {
   //expand the key into 11 round keys
 
   //round constant LUT
-  const byte round_constants[10] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36};
+  const unsigned int  round_constants[10] = {0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000,
+                                             0x20000000, 0x40000000, 0x80000000, 0x1B000000, 0x36000000};
 
   //generate the new round keys
   //the general algorithm here works on a single array of integers for all the keys, rather than a 2d array of bytes
@@ -152,6 +153,7 @@ unsigned int aes_keyexpansion_rotword(unsigned int w) {
   rot[1] = rot[2];
   rot[2] = rot[3];
   rot[3] = temp;
+  return w;
 }
 
 unsigned int aes_keyexpansion_subword(unsigned int w) {
@@ -161,6 +163,7 @@ unsigned int aes_keyexpansion_subword(unsigned int w) {
   sub[1] = SUBTABLE_LOOKUP(sub[1]);
   sub[2] = SUBTABLE_LOOKUP(sub[2]);
   sub[3] = SUBTABLE_LOOKUP(sub[3]);
+  return w;
 }
 
 void aes_addroundkey(byte** state, byte* roundkey) {
