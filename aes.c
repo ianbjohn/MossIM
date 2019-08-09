@@ -218,7 +218,7 @@ void aes_mixcolumns(byte state[][4]) {
 
 void aes_invsubbytes(byte state[][4]) {
   for (int i = 0; i < 4; i++) {
-    for (int j = 0; i < 4; j++)
+    for (int j = 0; j < 4; j++)
       state[i][j] = inv_sub_table[state[i][j]];
   }
 }
