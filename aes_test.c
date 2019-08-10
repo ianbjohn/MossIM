@@ -6,23 +6,29 @@ int main() {
   byte round_keys[11][16];
   byte plaintext[17] = {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!', '!', '!', '!', '!', '\0'};
 
-  printf("%s\n", plaintext);
-
-  aes_encrypt(plaintext, key);
-
-  printf("%s\n", plaintext);
-
-  aes_decrypt(plaintext, key);
-
-  printf("%s\n", plaintext);
-
-  /*
+  aes_keyexpansion(key, round_keys);
   for (int i = 0; i < 11; i++)
     printf("Round Key %d: %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x\n", i,
         round_keys[i][0], round_keys[i][1], round_keys[i][2], round_keys[i][3],
         round_keys[i][4], round_keys[i][5], round_keys[i][6], round_keys[i][7],
         round_keys[i][8], round_keys[i][9], round_keys[i][10], round_keys[i][11],
         round_keys[i][12], round_keys[i][13], round_keys[i][14], round_keys[i][15]);
+
+  /*
+  aes_encrypt(plaintext, key);
+
+  FILE* f = fopen("ciphertext", "w");
+  for (int i = 0; i < 16; i++)
+    fputc(plaintext[i], f);
+  fclose(f);
+
+  aes_decrypt(plaintext, key);
+
+  f = fopen("plaintext", "w");
+  for (int i = 0; i < 16; i++)
+    fputc(plaintext[i], f);
+  fclose(f);
   */
+
   return 0;
 }

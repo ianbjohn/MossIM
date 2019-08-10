@@ -1,4 +1,7 @@
 *.o
+*.save
+
 final
 aes_test
-*.save
+plaintext
+ciphertext
