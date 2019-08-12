@@ -22,12 +22,12 @@ typedef struct {
 void* client_handler(void* arg) {
   //our thread that actually handles sending/receiving of messages
   //pass the socket and sockaddr_in as arguments
-  
+
   msg_t recv_message;
   int left = 0;
 
   while (left == 0) {
-    if (recv(((chandler_t* ) arg)->sock, &recv_message, msg_size, MSG_DONTWAIT) == -1) {
+    if (recv(((chandler_t* ) arg)->sock, &recv_message, msg_size, MSG_DONTWAIT) < 0) {
       if (errno != EWOULDBLOCK) {
         //something happened besides no data being sent over the socket
         printf("Error receiving message. (%d)", errno);
@@ -60,7 +60,8 @@ void mass_send(msg_t* message) {
     if (active_sockets[i] == 1) {
       if (send(client_socks[i], message, msg_size, MSG_DONTWAIT) < 0) {
         if (errno != EWOULDBLOCK) {
-          perror("send");
+          printf("Error sending message. (%d)\n", errno);
+          exit(1);
         }
       }
     }
@@ -69,7 +70,7 @@ void mass_send(msg_t* message) {
 
 
 void server() {
-  printf("Hello.\n");
+  printf("Hello.\n"); //print version number or something here
 
   srand(time(0)); //initialize random seed for PRNG
 
@@ -94,7 +95,7 @@ void server() {
   }
   //char server_ip[INET_ADDRSTRLEN]; //used for testing to confirm the bound IP address
   //inet_ntop(AF_INET, &address.sin_addr, server_ip, INET_ADDRSTRLEN);
-  printf("Bound.");
+  printf("Bound.\n");
 
   //listen for incoming connections
   listen(sock, MAX_CLIENTS);
@@ -123,7 +124,7 @@ void server() {
         continue;
       }
     }
-    
+
     inet_ntop(AF_INET, &client_addr.sin_addr, address_string, INET_ADDRSTRLEN); //convert to IPv4 dot format
     printf("New connection from %s!\n", address_string);
     first_available_client = find_first_available_client();
@@ -139,7 +140,7 @@ void server() {
           client_handler, &client_handler_args[first_available_client]);
     num_clients++;
   }
-  
+
   close_client_sockets();
   close(sock);
 }

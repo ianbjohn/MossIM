@@ -49,7 +49,7 @@ void client() {
   //ask the client for a username
   printf("Please specify a username: ");
   scanf("%s", send_message.username);
-  
+
   //set up ncurses
   initscr();
   nodelay(stdscr, 1); //don't wait for user input
@@ -85,12 +85,16 @@ void client() {
   time(&timething);
   struct tm *timer = localtime(&timething);
   memcpy(&send_message.time_sent, timer, sizeof(struct tm));
-  send(sock, &send_message, msg_size, MSG_DONTWAIT);
+  //send(sock, &send_message, msg_size, MSG_DONTWAIT);
+  if (send(sock, &send_message, msg_size, 0) < 0) {
+    printf("Error sending message. (%d)", errno);
+    exit(1);
+  }
 
   //have a shifting list of recieved messages
   msg_t received_messages[MAX_MESSAGES];
   int rm_index = 0; //will start out at 0, once it gets to 9, stop incrementing
-  
+
   //do stuff
   while (1) {
     int enter_pressed = 0;
@@ -101,7 +105,7 @@ void client() {
     mvwprintw(input_win, 1, 1, "%s", msg_buffer);
     wmove(input_win, 1, msg_buffer_pos + 1);
     wrefresh(input_win);
-    
+
     //when the user types, add it to dthe buffer.
     if ((c = getch()) != ERR) {
       if (c == ENTER && msg_buffer_pos > 0) {
@@ -139,10 +143,9 @@ void client() {
     }
 
     //if message received, print it
-    int r;
-    if ((r = recv(sock, &recv_message, msg_size, MSG_DONTWAIT)) == -1) {
+    if (recv(sock, &recv_message, msg_size, MSG_DONTWAIT) < 0) {
       if (errno != EWOULDBLOCK) {
-        perror("recv");
+        printf("Error receiving message. (%d)\n", errno);
         exit(1);
       }
     } else {
@@ -167,7 +170,7 @@ void client() {
   received_messages[i].time_sent.tm_mon, received_messages[i].time_sent.tm_mday,
   received_messages[i].time_sent.tm_year + 1900, received_messages[i].time_sent.tm_hour,
   received_messages[i].time_sent.tm_min, received_messages[i].time_sent.tm_sec);
-        
+
         //give the username a color
         wattron(message_win, COLOR_PAIR(received_messages[i].color));
         if (received_messages[i].msg_type == MT_JOIN) {
