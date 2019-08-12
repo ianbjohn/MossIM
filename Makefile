@@ -8,7 +8,7 @@ LIBS         = -lncurses
 LIBPATHS     =
 INCLUDEPATHS =
 
-PROGRAM     = final
+PROGRAM     = MossIM
 OBJS        = test.o server.o client.o aes.o
 
 $(PROGRAM):$(OBJS)
