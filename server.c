@@ -92,8 +92,8 @@ void server() {
     printf("Error binding socket. (%d)\n", errno);
     exit(1);
   }
-  char server_ip[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &address.sin_addr, server_ip, INET_ADDRSTRLEN);
+  //char server_ip[INET_ADDRSTRLEN]; //used for testing to confirm the bound IP address
+  //inet_ntop(AF_INET, &address.sin_addr, server_ip, INET_ADDRSTRLEN);
   printf("Bound.");
 
   //listen for incoming connections
