@@ -21,8 +21,8 @@ int main() {
   }
   printf("\n");
 
-  //test addroundkey
-  aes_addroundkey(state, key); //for AES128, the first round key is the same as the initial key
+  //test subbytes
+  aes_subbytes(state);
 
   //print result
   for (int i = 0; i < 4; i++) {
@@ -32,8 +32,8 @@ int main() {
   }
   printf("\n");
 
-  //test addroundkey again (should do the inverse)
-  aes_addroundkey(state, key);
+  //test invsubbytes
+  aes_invsubbytes(state);
 
   //print result (should be original state)
   for (int i = 0; i < 4; i++) {
