@@ -20,3 +20,6 @@ void aes_mixcolumns(byte state[][4]);
 void aes_invsubbytes(byte state[][4]);
 void aes_invshiftrows(byte state[][4]);
 void aes_invmixcolumns(byte state[][4]);
+
+//helper functions
+byte aes_mult_mod(byte a, byte b); //weird multiplication with modulo that AES uses

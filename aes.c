@@ -263,3 +263,25 @@ void aes_invmixcolumns(byte state[][4]) {
     state[3][i] = tempstate[3][i];
   }
 }
+
+//helper functions
+byte aes_mult_mod(byte a, byte b) {
+  //AES uses this weird form of multiplication where each bit is treated as a term, and they get XOR'd if there's two of them
+  //i.e if there are 2 (x^2)s after a multiplication, they cancel out.
+  //The result is then modulo'd with 0x11B, since it then guarantees that the result will be expressible within 8 bits
+  //hence we need this handy-dandy special little function here to take care of this mess
+
+  short result;
+
+  //"multiply" each bit of the two args together, XOR the result into that spot in the result, mod with 0x11B, return as a byte
+  //try and optimize later if possible. (There was something on wikipedia about an optimization on the bit level or other.)
+  //maybe use LUTs for the shifting, see how it compares to barrel shifting (I would imagine it'd have to be at least a bit faster.)
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      result ^= ((a & (0x01 << i)) * (b & (0x01 << j)) > 0 ? (0x01 << (i + j)) : 0);
+    }
+  }
+
+  result %= 0x11B;
+  return (byte) result;
+}
