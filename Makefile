@@ -1,6 +1,6 @@
 CC           = gcc
-CFLAGS       = -pthread -std=c99 -gdwarf
-#CFLAGS       = -O2 -g
+CFLAGS       = -pthread -std=c99
+#CFLAGS       = -O2 -gdwarf -S
 
 #set the following variables for custom libraries and/or other objects
 EXTOBJS      =

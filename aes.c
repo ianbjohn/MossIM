@@ -204,10 +204,10 @@ void aes_mixcolumns(byte state[][4]) {
   byte tempstate[4][4]; //store the result here so the initial state isn't altered during the calculation
 
   for (int i = 0; i < 4; i++) {
-    tempstate[0][i] = (2 * state[0][i]) ^ (3 * state[1][i]) ^ state[2][i] ^ state[3][i];
-    tempstate[1][i] = state[0][i] ^ (2 * state[1][i]) ^ (3 * state[2][i]) ^ state[3][i];
-    tempstate[2][i] = state[0][i] ^ state[1][i] ^ (2 * state[2][i]) ^ (3 * state[3][i]);
-    tempstate[3][i] = (3 * state[0][i]) ^ state[1][i] ^ state[2][i] ^ (2 * state[3][i]);
+    tempstate[0][i] = aes_mult_mod(2, state[0][i]) ^ aes_mult_mod(3, state[1][i]) ^ state[2][i] ^ state[3][i];
+    tempstate[1][i] = state[0][i] ^ aes_mult_mod(2, state[1][i]) ^ aes_mult_mod(3, state[2][i]) ^ state[3][i];
+    tempstate[2][i] = state[0][i] ^ state[1][i] ^ aes_mult_mod(2, state[2][i]) ^ aes_mult_mod(3, state[3][i]);
+    tempstate[3][i] = aes_mult_mod(3, state[0][i]) ^ state[1][i] ^ state[2][i] ^ aes_mult_mod(2, state[3][i]);
 
     //copy column to original state - isn't needed anymore in following calculations
     state[0][i] = tempstate[0][i];
@@ -253,10 +253,10 @@ void aes_invmixcolumns(byte state[][4]) {
   byte tempstate[4][4];
 
   for (int i = 0; i < 4; i++) {
-    tempstate[0][i] = (14 * state[0][i]) ^ (11 * state[1][i]) ^ (13 * state[2][i]) ^ (9 * state[3][i]);
-    tempstate[1][i] = (9 * state[0][i]) ^ (14 * state[1][i]) ^ (11 * state[2][i]) ^ (13 * state[3][i]);
-    tempstate[2][i] = (13 * state[0][i]) ^ (9 * state[1][i]) ^ (14 * state[2][i]) ^ (11 * state[3][i]);
-    tempstate[3][i] = (11 * state[0][i]) ^ (13 * state[1][i]) ^ (9 * state[2][i]) ^ (14 * state[3][i]);
+    tempstate[0][i] = aes_mult_mod(14, state[0][i]) ^ aes_mult_mod(11, state[1][i]) ^ aes_mult_mod(13, state[2][i]) ^ aes_mult_mod(9, state[3][i]);
+    tempstate[1][i] = aes_mult_mod(9, state[0][i]) ^ aes_mult_mod(14, state[1][i]) ^ aes_mult_mod(11, state[2][i]) ^ aes_mult_mod(13, state[3][i]);
+    tempstate[2][i] = aes_mult_mod(13, state[0][i]) ^ aes_mult_mod(9, state[1][i]) ^ aes_mult_mod(14, state[2][i]) ^ aes_mult_mod(11, state[3][i]);
+    tempstate[3][i] = aes_mult_mod(11, state[0][i]) ^ aes_mult_mod(13, state[1][i]) ^ aes_mult_mod(9, state[2][i]) ^ aes_mult_mod(14, state[3][i]);
 
     state[0][i] = tempstate[0][i];
     state[1][i] = tempstate[1][i];

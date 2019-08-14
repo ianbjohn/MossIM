@@ -6,7 +6,6 @@ int main() {
   byte round_keys[11][16];
   byte plaintext[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10};
 
-  /*
   byte state[4][4];
 
   for (int i = 0; i < 4; i++) {
@@ -42,10 +41,9 @@ int main() {
       printf("%x ", state[i][j]);
     printf("\n");
   }
-  */
 
   //test to see if mult_mod works as intended
-  printf("%x\n", aes_mult_mod(0x57, 0x13));
+  //printf("%x\n", aes_mult_mod(0x01, 0xBF));
 
   return 0;
 }
