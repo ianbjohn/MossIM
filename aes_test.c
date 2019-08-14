@@ -21,8 +21,8 @@ int main() {
   }
   printf("\n");
 
-  //test subbytes
-  aes_subbytes(state);
+  //test shiftrows
+  aes_shiftrows(state);
 
   //print result
   for (int i = 0; i < 4; i++) {
@@ -32,8 +32,8 @@ int main() {
   }
   printf("\n");
 
-  //test invsubbytes
-  aes_invsubbytes(state);
+  //test invshiftrows
+  aes_invshiftrows(state);
 
   //print result (should be original state)
   for (int i = 0; i < 4; i++) {
