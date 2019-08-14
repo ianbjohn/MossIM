@@ -23,3 +23,4 @@ void aes_invmixcolumns(byte state[][4]);
 
 //helper functions
 byte aes_mult_mod(byte a, byte b); //weird multiplication with modulo that AES uses
+byte aes_xtime(byte a); //needed by aes_mult_mod

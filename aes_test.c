@@ -45,7 +45,7 @@ int main() {
   */
 
   //test to see if mult_mod works as intended
-  printf("%x\n", aes_mult_mod(0x57, 0x83));
+  printf("%x\n", aes_mult_mod(0x57, 0x13));
 
   return 0;
 }

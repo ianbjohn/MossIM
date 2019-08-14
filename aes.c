@@ -95,6 +95,7 @@ void aes_decrypt(byte* ciphertext, byte* key) {
   byte roundkeys[11][16];
   aes_keyexpansion(key, roundkeys);
 
+  //the documentation shows a different order than the steps in just reverse order. Try and learn more as to why.
   aes_addroundkey(state, roundkeys[10]);
   aes_invshiftrows(state);
   aes_invsubbytes(state);
@@ -266,22 +267,32 @@ void aes_invmixcolumns(byte state[][4]) {
 
 //helper functions
 byte aes_mult_mod(byte a, byte b) {
-  //AES uses this weird form of multiplication where each bit is treated as a term, and they get XOR'd if there's two of them
-  //i.e if there are 2 (x^2)s after a multiplication, they cancel out.
-  //The result is then modulo'd with 0x11B, since it then guarantees that the result will be expressible within 8 bits
-  //hence we need this handy-dandy special little function here to take care of this mess
+  //AES uses this weird form of multiplication where the byte is treated as a degree 7 polynomial and then modulo'd after the multiplication
+  //A way that GREATLY simplifies this matter is with each set bit in the given byte b, shift a left the corresponding number of times
+    //(i.e if bit 7 of b is set, shift a left 7 times). And each time, if the result overflowed, XOR with 0x11B and cast back to an 8-bit byte.
+    //with each set byte in b, XOR the result of these multiplications together to get the """""product""""" that AES can work with
+  //xtime() helps with this sub-problem of shifting and then conditionally XORing
 
-  short result;
+  byte result = 0;
 
-  //"multiply" each bit of the two args together, XOR the result into that spot in the result, mod with 0x11B, return as a byte
-  //try and optimize later if possible. (There was something on wikipedia about an optimization on the bit level or other.)
-  //maybe use LUTs for the shifting, see how it compares to barrel shifting (I would imagine it'd have to be at least a bit faster.)
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8; j++) {
-      result ^= ((a & (0x01 << i)) * (b & (0x01 << j)) > 0 ? (0x01 << (i + j)) : 0);
+  for (int i = 7; i >= 0; i--) {
+    if ((b & (0x01 << i)) != 0) {
+      byte term = a;
+      //the i'th bit is set, call xtime on a this many times
+      for (int j = 0; j < i; j++)
+        term = aes_xtime(term);
+
+      result ^= term;
     }
   }
 
-  result %= 0x11B;
-  return (byte) result;
+  return result;
+}
+
+byte aes_xtime(byte a) {
+  short result = a << 1;
+  if (result >= 0x100)
+    result ^= 0x11B;
+
+  return result;
 }
