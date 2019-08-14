@@ -21,8 +21,8 @@ int main() {
   }
   printf("\n");
 
-  //mixcolumns
-  aes_mixcolumns(state);
+  //test addroundkey
+  aes_addroundkey(state, key); //for AES128, the first round key is the same as the initial key
 
   //print result
   for (int i = 0; i < 4; i++) {
@@ -32,18 +32,15 @@ int main() {
   }
   printf("\n");
 
-  //invmixcolumns
-  aes_invmixcolumns(state);
+  //test addroundkey again (should do the inverse)
+  aes_addroundkey(state, key);
 
-  //print result (should be original state? but isn't?)
+  //print result (should be original state)
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)
       printf("%x ", state[i][j]);
     printf("\n");
   }
-
-  //test to see if mult_mod works as intended
-  //printf("%x\n", aes_mult_mod(0x01, 0xBF));
 
   return 0;
 }
