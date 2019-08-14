@@ -267,10 +267,10 @@ void aes_invmixcolumns(byte state[][4]) {
 
 //helper functions
 byte aes_mult_mod(byte a, byte b) {
-  //AES uses this weird form of multiplication where the byte is treated as a degree 7 polynomial and then modulo'd after the multiplication
+  //AES uses this weird form of multiplication where the byte is treated as a degree 7 polynomial and then modulo'd after the multiplication.
   //A way that GREATLY simplifies this matter is with each set bit in the given byte b, shift a left the corresponding number of times
     //(i.e if bit 7 of b is set, shift a left 7 times). And each time, if the result overflowed, XOR with 0x11B and cast back to an 8-bit byte.
-    //with each set byte in b, XOR the result of these multiplications together to get the """""product""""" that AES can work with
+    //with each set bit in b, XOR the result of these multiplications together to get the """""product""""" that AES can work with
   //xtime() helps with this sub-problem of shifting and then conditionally XORing
 
   byte result = 0;
