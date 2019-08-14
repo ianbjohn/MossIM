@@ -62,7 +62,7 @@ void aes_encrypt(byte* plaintext, byte* key) {
   aes_addroundkey(state, roundkeys[0]);
 
   //main bulk of it
-  for (int i = 1; i < 9; i++) {
+  for (int i = 1; i < 10; i++) {
     aes_subbytes(state);
     aes_shiftrows(state);
     aes_mixcolumns(state);
@@ -164,7 +164,7 @@ void aes_addroundkey(byte state[][4], byte* roundkey) {
   //XOR each byte of the state with the respective byte of the subkey state
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)
-      state[j][i] ^= roundkey[(j * 4) + i];
+      state[j][i] ^= roundkey[(i * 4) + j];
   }
 }
 
