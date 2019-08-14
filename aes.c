@@ -204,7 +204,7 @@ void aes_mixcolumns(byte state[][4]) {
 
   for (int i = 0; i < 4; i++) {
     tempstate[0][i] = (2 * state[0][i]) ^ (3 * state[1][i]) ^ state[2][i] ^ state[3][i];
-    tempstate[1][i] = state[0][i] ^ (2 & state[1][i]) ^ (3 * state[2][i]) ^ state[3][i];
+    tempstate[1][i] = state[0][i] ^ (2 * state[1][i]) ^ (3 * state[2][i]) ^ state[3][i];
     tempstate[2][i] = state[0][i] ^ state[1][i] ^ (2 * state[2][i]) ^ (3 * state[3][i]);
     tempstate[3][i] = (3 * state[0][i]) ^ state[1][i] ^ state[2][i] ^ (2 * state[3][i]);
 
