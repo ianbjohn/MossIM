@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <sys/epoll.h>
 #include "test.h"
 
 
@@ -6,6 +7,8 @@
 int client_socks[MAX_CLIENTS];
 struct sockaddr_in client_addresses[MAX_CLIENTS];
 int active_sockets[MAX_CLIENTS] = {0}; //which sockets are currently active
+int epollfd; //used for polling data
+struct epoll_event ev, events[MAX_CLIENTS];
 int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to eacch client
 int sin_size = sizeof(struct sockaddr_in);
 int num_clients;
