@@ -78,7 +78,7 @@ void server() {
   srand(time(0)); //initialize random seed for PRNG
 
   //create TCP socket
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  int sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
   //ask the user for a port to bind to
   unsigned short port;
