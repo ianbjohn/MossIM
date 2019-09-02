@@ -9,7 +9,7 @@ LIBPATHS     =
 INCLUDEPATHS =
 
 PROGRAM     = MossIM
-OBJS        = test.o server.o client.o aes.o
+OBJS        = main.o moss.o server.o client.o aes.o
 
 $(PROGRAM):$(OBJS)
 	$(CC) -o $(PROGRAM) $(LIBPATHS) $(CFLAGS) $(OBJS) $(EXTOBJS) $(LIBS)

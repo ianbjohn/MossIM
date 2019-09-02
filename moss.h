@@ -1,5 +1,5 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef MOSS_H
+#define MOSS_H
 
 #include <sys/socket.h>
 #include <sys/types.h>

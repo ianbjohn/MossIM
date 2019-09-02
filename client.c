@@ -1,5 +1,5 @@
 #include <ncurses.h>
-#include "test.h"
+#include "moss.h"
 
 #define BACKSPACE 127
 #define ENTER 10
@@ -16,6 +16,9 @@ void client() {
   char msg_buffer[MSG_LENGTH]; //used for holding a message's text
   int msg_buffer_pos = 0;
   msg_t send_message, recv_message;
+
+  //set up random seed
+  srand(time(0));
 
   printf("Hello.\n");
 
@@ -41,7 +44,7 @@ void client() {
 
   //connect to server
   if (connect(sock, (struct sockaddr* ) &address, sizeof(address)) < 0) {
-    printf("Could not connect to server. (%d)\n", errno);
+    perror("Could not connect to server.");
     exit(1);
   }
   printf("Connected.\n");
@@ -87,7 +90,7 @@ void client() {
   struct tm *timer = localtime(&timething);
   memcpy(&send_message.time_sent, timer, sizeof(struct tm));
   if (send(sock, &send_message, msg_size, 0) < 0) {
-    printf("Error sending message. (%d)", errno);
+    perror("Error sending message.");
     exit(1);
   }
 
@@ -150,7 +153,7 @@ void client() {
     //Also, split the two functions up into their own files, for better organization.
     if (recv(sock, &recv_message, msg_size, MSG_DONTWAIT) < 0) {
       if (errno != EWOULDBLOCK) {
-        printf("Error receiving message. (%d)\n", errno);
+        perror("Error receiving message.");
         exit(1);
       }
     } else {

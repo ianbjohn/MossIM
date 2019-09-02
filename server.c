@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include <sys/epoll.h>
-#include "test.h"
+#include "moss.h"
 
 
 //data that the server needs
@@ -29,7 +29,7 @@ void* client_handler() {
 
     for (int i = 0; i < num_ready_socks; i++) {
       if (recv(ready_events[i].data.fd, &recv_message, msg_size, 0) < 0) {
-        perror("recv");
+        perror("Error receiving message.");
         exit(1);
       }
 
@@ -54,7 +54,7 @@ void mass_send(msg_t* message) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (active_sockets[i] == 1) {
       if (send(client_socks[i], message, msg_size, 0) < 0) {
-        printf("Error sending message. (%d)\n", errno);
+        perror("Error sending message.");
         exit(1);
       }
     }
@@ -83,7 +83,7 @@ void server() {
 
   //bind socket
   if (bind(sock, (struct sockaddr* ) &address, sin_size) < 0) {
-    printf("Error binding socket. (%d)\n", errno);
+    perror("Error binding socket.");
     exit(1);
   }
   //char server_ip[INET_ADDRSTRLEN]; //used for testing to confirm the bound IP address
@@ -111,16 +111,15 @@ void server() {
     char address_string[INET_ADDRSTRLEN];
 
     int temp_client_sock = accept(sock, (struct sockaddr* ) &client_addr, &sin_size);
+    inet_ntop(AF_INET, &client_addr.sin_addr, address_string, INET_ADDRSTRLEN); //convert to IPv4 dot format
     if (temp_client_sock < 0) {
       if (errno == ENFILE) {
         //no more connections are available
-        inet_ntop(AF_INET, &client_addr.sin_addr, address_string, INET_ADDRSTRLEN);
-        printf("%s tried to join. Max # of clients already connected.\n", address);
+        printf("%s tried to join. Max # of clients already connected.\n", address_string);
         continue;
       }
     }
 
-    inet_ntop(AF_INET, &client_addr.sin_addr, address_string, INET_ADDRSTRLEN); //convert to IPv4 dot format
     printf("New connection from %s!\n", address_string);
     first_available_client = find_first_available_client();
     active_sockets[first_available_client] = 1; //mark as active
