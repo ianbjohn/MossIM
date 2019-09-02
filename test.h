@@ -28,7 +28,7 @@ typedef struct {
 } msg_t;
 
 void client();
-void* client_handler(void* args);
+void* client_handler();
 void server();
 void close_client_sockets();
 void mass_send(msg_t* message);

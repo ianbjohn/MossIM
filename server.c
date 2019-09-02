@@ -5,52 +5,44 @@
 
 //data that the server needs
 int client_socks[MAX_CLIENTS];
-struct sockaddr_in client_addresses[MAX_CLIENTS];
 int active_sockets[MAX_CLIENTS] = {0}; //which sockets are currently active
-int epollfd; //used for polling data
-struct epoll_event ev, events[MAX_CLIENTS];
+int epfd_client; //used for polling the client sockets
+struct epoll_event handler_event, ready_events[MAX_CLIENTS];
 int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to eacch client
 int sin_size = sizeof(struct sockaddr_in);
 int num_clients;
 int first_available_client;
 
-//used for passing data to a thread
-typedef struct {
-  int id;
-  int sock;
-  struct sockaddr_in sin_addr;
-} chandler_t;
 
-
-void* client_handler(void* arg) {
-  //our thread that actually handles sending/receiving of messages
-  //pass the socket and sockaddr_in as arguments
+//our thread that actually handles the sending/receiving of messages
+void* client_handler() {
+  //initialize polling
+  epfd_client = epoll_create(1);
+  handler_event.events = EPOLLIN;
 
   msg_t recv_message;
-  int left = 0;
+  int num_ready_socks;
 
-  while (left == 0) {
-    if (recv(((chandler_t* ) arg)->sock, &recv_message, msg_size, MSG_DONTWAIT) < 0) {
-      if (errno != EWOULDBLOCK) {
-        //something happened besides no data being sent over the socket
-        printf("Error receiving message. (%d)", errno);
+  while (1) {
+    //poll to see which sockets are ready
+    num_ready_socks = epoll_wait(epfd_client, ready_events, 1, -1);
+
+    for (int i = 0; i < num_ready_socks; i++) {
+      if (recv(ready_events[i].data.fd, &recv_message, msg_size, 0) < 0) {
+        perror("recv");
         exit(1);
       }
-    } else {
-      recv_message.color = client_colors[((chandler_t* ) arg)->id];
-      if (recv_message.msg_type == MT_JOIN) {
+
+      if (recv_message.msg_type == MT_JOIN)
         mass_send(&recv_message);
-      } else if (recv_message.msg_type == MT_LEAVE) {
-        close(((chandler_t* ) arg)->sock);
-        client_socks[((chandler_t* ) arg)->id] = 0;
-        active_sockets[((chandler_t* ) arg)->id] = 0;
+      else if (recv_message.msg_type == MT_LEAVE) {
+        close(ready_events[i].data.fd);
+        active_sockets[0] = 0; //MAP SOCKETS TO IDS, OR HAVE THE ID IN THE MESSAGE STRUCTURE
         num_clients--;
         first_available_client = find_first_available_client();
         mass_send(&recv_message);
-        left = 1;
-      } else if (recv_message.msg_type == MT_REG) {
+      } else if (recv_message.msg_type == MT_REG) 
         mass_send(&recv_message);
-      }
     }
   }
 
@@ -61,11 +53,9 @@ void* client_handler(void* arg) {
 void mass_send(msg_t* message) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (active_sockets[i] == 1) {
-      if (send(client_socks[i], message, msg_size, MSG_DONTWAIT) < 0) {
-        if (errno != EWOULDBLOCK) {
-          printf("Error sending message. (%d)\n", errno);
-          exit(1);
-        }
+      if (send(client_socks[i], message, msg_size, 0) < 0) {
+        printf("Error sending message. (%d)\n", errno);
+        exit(1);
       }
     }
   }
@@ -78,7 +68,7 @@ void server() {
   srand(time(0)); //initialize random seed for PRNG
 
   //create TCP socket
-  int sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
 
   //ask the user for a port to bind to
   unsigned short port;
@@ -106,18 +96,20 @@ void server() {
   //initialize server data
   num_clients = 0;
   first_available_client = 0;
-  chandler_t client_handler_args[MAX_CLIENTS];
 
   printf("Waiting for connections...\n");
 
-  //set up multithreading
-  pthread_t thread_ids[MAX_CLIENTS];
-  pthread_attr_t thread_attribs[MAX_CLIENTS];
+  //set up client handler thread
+  pthread_t client_thread;
+  pthread_attr_t client_thread_attrib;
+  pthread_attr_init(&client_thread_attrib);
+  pthread_create(&client_thread, &client_thread_attrib, client_handler, NULL);
 
   while (1) {
     //check and see if any new clients have joined the server
     struct sockaddr_in client_addr;
     char address_string[INET_ADDRSTRLEN];
+
     int temp_client_sock = accept(sock, (struct sockaddr* ) &client_addr, &sin_size);
     if (temp_client_sock < 0) {
       if (errno == ENFILE) {
@@ -133,14 +125,12 @@ void server() {
     first_available_client = find_first_available_client();
     active_sockets[first_available_client] = 1; //mark as active
     client_socks[first_available_client] = temp_client_sock;
-    client_colors[first_available_client] = rand() % 7; //generate a random number 0-6 corresponding to a client color
-    //set up new thread
-    client_handler_args[first_available_client].id = first_available_client;
-    client_handler_args[first_available_client].sock = client_socks[first_available_client];
-    client_handler_args[first_available_client].sin_addr = client_addresses[first_available_client];
-    pthread_attr_init(&thread_attribs[first_available_client]);
-    pthread_create(&thread_ids[first_available_client], &thread_attribs[first_available_client],
-          client_handler, &client_handler_args[first_available_client]);
+    handler_event.events = EPOLLIN;
+    handler_event.data.fd = temp_client_sock;
+    if (epoll_ctl(epfd_client, EPOLL_CTL_ADD, temp_client_sock, &handler_event) < 0) {
+      perror("epoll_ctl");
+      exit(1);
+    }
     num_clients++;
   }
 

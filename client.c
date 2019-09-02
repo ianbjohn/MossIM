@@ -75,17 +75,17 @@ void client() {
   //wborder(message_win, VERT_EDGE, VERT_EDGE, HOR_EDGE, HOR_EDGE, TL_CORNER, TR_CORNER, BL_CORNER, BR_CORNER);
   //wborder(input_win, VERT_EDGE, VERT_EDGE, HOR_EDGE, HOR_EDGE, TL_CORNER, TR_CORNER, BL_CORNER, BR_CORNER);
   wborder(message_win, '|', '|', '-', '-', '+', '+', '+', '+');
-  wborder(input_win, '|', '|', '-', '-', '+', '+', '+', '+'); 
+  wborder(input_win, '|', '|', '-', '-', '+', '+', '+', '+');
   wrefresh(message_win);
   wrefresh(input_win);
 
   //let the server know that we've joined
   send_message.msg_type = MT_JOIN;
+  send_message.color = rand() % 7; //pick a random color to start out with
   time_t timething;
   time(&timething);
   struct tm *timer = localtime(&timething);
   memcpy(&send_message.time_sent, timer, sizeof(struct tm));
-  //send(sock, &send_message, msg_size, MSG_DONTWAIT);
   if (send(sock, &send_message, msg_size, 0) < 0) {
     printf("Error sending message. (%d)", errno);
     exit(1);
@@ -122,7 +122,7 @@ void client() {
         time(&timething);
         timer = localtime(&timething);
         memcpy(&send_message.time_sent, timer, sizeof(struct tm));
-        send(sock, &send_message, msg_size, MSG_DONTWAIT);
+        send(sock, &send_message, msg_size, 0);
         if (leave == 1) {
           break;
         }
@@ -143,6 +143,11 @@ void client() {
     }
 
     //if message received, print it
+    //eventually, add polling on this too. Have the main thread be the bottom window waiting for input (without delay)
+      //and the top window be its own thread, polling the receiving socket.
+    //That way, there's no busy waiting, and the window doesn't have to be re-drawn every single frame unnecessarily.
+    //Might require some global / shared memory, but I think it'll be worth it.
+    //Also, split the two functions up into their own files, for better organization.
     if (recv(sock, &recv_message, msg_size, MSG_DONTWAIT) < 0) {
       if (errno != EWOULDBLOCK) {
         printf("Error receiving message. (%d)\n", errno);
