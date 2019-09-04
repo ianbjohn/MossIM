@@ -3,8 +3,9 @@
 
 
 //data that the server needs
-int client_socks[MAX_CLIENTS];
-int active_sockets[MAX_CLIENTS] = {0}; //which sockets are currently active
+int active_socks[MAX_CLIENTS]; //turn into a BST or a hash table (Think im gonna go with a balanced BST)
+  //Review Data Structure Notes.
+  //sort by FD, include FD and color as node data
 int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to eacch client
 int sin_size = sizeof(struct sockaddr_in);
 int num_clients;
@@ -23,9 +24,8 @@ void client_handler(int sock) {
     mass_send(&recv_message);
   else if (recv_message.msg_type == MT_LEAVE) {
     close(sock);
-    active_sockets[0] = 0; //MAP SOCKETS TO IDS, OR HAVE THE ID IN THE MESSAGE STRUCTURE
+    active_socks[0] = 0; //remove from tree
     num_clients--;
-    first_available_client = find_first_available_client();
     mass_send(&recv_message);
   } else if (recv_message.msg_type == MT_REG)
     mass_send(&recv_message);
@@ -33,12 +33,11 @@ void client_handler(int sock) {
 
 
 void mass_send(msg_t* message) {
+  //turn into an in-order traversal of the tree
   for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (active_sockets[i] == 1) {
-      if (send(client_socks[i], message, msg_size, 0) < 0) {
-        perror("Error sending message.");
-        exit(1);
-      }
+    if (send(active_socks[i], message, msg_size, 0) < 0) {
+      perror("Error sending message.");
+      exit(1);
     }
   }
 }
@@ -121,9 +120,8 @@ void server() {
         }
 
         printf("New connection from %s!\n", address_string);
-        first_available_client = find_first_available_client();
-        active_sockets[first_available_client] = 1; //mark as active
-        client_socks[first_available_client] = temp_client_sock;
+        //(insert new socket into the tree
+        active_socks[first_available_client] = temp_client_sock;
         num_clients++;
         handler_event.events = EPOLLIN;
         handler_event.data.fd = temp_client_sock;
@@ -133,6 +131,7 @@ void server() {
         }
       } else {
         //data received from an already-connected client
+        //(set up a thread to process the data)
         client_handler(ready_events[i].data.fd);
       }
     }
@@ -143,19 +142,7 @@ void server() {
 }
 
 void close_client_socks() {
-  for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (active_sockets[i]) {
-      close(client_socks[i]);
-    }
-  }
-}
-
-int find_first_available_client() {
-  //linear searches the list of clients for the first free one. Return -1 if none are free
-  for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (active_sockets[i] == 0) {
-      return i;
-    }
-  }
-  return -1;
+  //delete each member of the tree
+  for (int i = 0; i < MAX_CLIENTS; i++)
+    close(active_socks[i]);
 }

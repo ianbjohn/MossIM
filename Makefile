@@ -3,23 +3,16 @@ CFLAGS       = -std=c99
 #CFLAGS       = -O2 -gdwarf -S
 
 #set the following variables for custom libraries and/or other objects
-EXTOBJS      =
 LIBS         = -lncurses
-LIBPATHS     =
-INCLUDEPATHS =
 
 PROGRAM     = MossIM
-OBJS        = main.o moss.o server.o client.o aes.o
+INCLUDEPATHS = -I./include
+#clean this up with wildcards
+OBJSDIR = ./objs
+OBJS = $(wildcard $(OBJSDIR)/*.o)
 
-$(PROGRAM):$(OBJS)
-	$(CC) -o $(PROGRAM) $(LIBPATHS) $(CFLAGS) $(OBJS) $(EXTOBJS) $(LIBS)
-aes_test: aes.o aes_test.o
-	gcc -o aes_test -std=c99 aes.o aes_test.o
-
-.c.o:
-	$(CC) $(CFLAGS) $(TUNEFLAGS) $(INCLUDEPATHS) -c $<
+$(PROGRAM): $(OBJS)
+	$(CC) -o $(CFLAGS)
 
 clean:
 	rm -f $(OBJS) $(PROGRAM) *~
-	rm -f aes_test.o aes_test *~
-

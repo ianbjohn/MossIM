@@ -20,6 +20,7 @@
 #define MT_LEAVE 2
 
 typedef struct {
+  int length; //how big the message is
   int msg_type; //0 - regular message, 1 - join, 2 - leave
   char username[UNAME_LENGTH];
   int color; //what color the username should be
