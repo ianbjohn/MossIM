@@ -1,5 +1,5 @@
 CC           = gcc
-CFLAGS       = -std=c99
+CFLAGS       = -std=c99 -pthread
 #CFLAGS       = -O2 -gdwarf -S
 
 #set the following variables for custom libraries and/or other objects

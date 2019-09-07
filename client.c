@@ -13,7 +13,7 @@
 
 
 void client() {
-  char msg_buffer[MSG_LENGTH]; //used for holding a message's text
+  char msg_buffer[MSG_DATA_MAX_LENGTH]; //used for holding a message's text
   int msg_buffer_pos = 0;
   msg_t send_message, recv_message;
 
@@ -75,8 +75,6 @@ void client() {
   WINDOW* message_win = newwin(MAX_MESSAGES + 2, 100, 0, 0);
   WINDOW* input_win = newwin(7, 100, (MAX_MESSAGES + 2) + 1, 0);
   refresh();
-  //wborder(message_win, VERT_EDGE, VERT_EDGE, HOR_EDGE, HOR_EDGE, TL_CORNER, TR_CORNER, BL_CORNER, BR_CORNER);
-  //wborder(input_win, VERT_EDGE, VERT_EDGE, HOR_EDGE, HOR_EDGE, TL_CORNER, TR_CORNER, BL_CORNER, BR_CORNER);
   wborder(message_win, '|', '|', '-', '-', '+', '+', '+', '+');
   wborder(input_win, '|', '|', '-', '-', '+', '+', '+', '+');
   wrefresh(message_win);
@@ -89,7 +87,9 @@ void client() {
   time(&timething);
   struct tm *timer = localtime(&timething);
   memcpy(&send_message.time_sent, timer, sizeof(struct tm));
-  if (send(sock, &send_message, msg_size, 0) < 0) {
+  //TODO: Might not actually need the message length in the structure field. Might be okay to just pass it to the send_msg argument.
+  send_message.length = msg_length;
+  if (send(sock, &send_message, msg_length, 0) < 0) {
     perror("Error sending message.");
     exit(1);
   }
@@ -109,28 +109,30 @@ void client() {
     wmove(input_win, 1, msg_buffer_pos + 1);
     wrefresh(input_win);
 
-    //when the user types, add it to dthe buffer.
+    //when the user types, add it to the buffer.
     if ((c = getch()) != ERR) {
       if (c == ENTER && msg_buffer_pos > 0) {
         int leave = 0;
         msg_buffer[msg_buffer_pos] = '\0';
+        int msg_data_length = strlen(msg_buffer) + 1;
         //send message over socket
-        memcpy(send_message.data, msg_buffer, strlen(msg_buffer) + 1);
         if (strcmp(msg_buffer, "!leave") == 0) {
           send_message.msg_type = MT_LEAVE;
           leave = 1;
         } else {
           send_message.msg_type = MT_REG;
+          memcpy(send_message.data, msg_buffer, msg_data_length);
         }
         time(&timething);
         timer = localtime(&timething);
         memcpy(&send_message.time_sent, timer, sizeof(struct tm));
-        send(sock, &send_message, msg_size, 0);
+        send_message.length = msg_length - (MSG_DATA_MAX_LENGTH - msg_data_length);
+        send(sock, &send_message, msg_length, 0);
         if (leave == 1) {
           break;
         }
         //clear the buffer
-        memset(msg_buffer, 0, MSG_LENGTH * sizeof(char));
+        memset(msg_buffer, 0, MSG_DATA_MAX_LENGTH * sizeof(char));
         msg_buffer_pos = 0;
         enter_pressed = 1;
         wclear(input_win);
@@ -139,7 +141,7 @@ void client() {
         msg_buffer[--msg_buffer_pos] = '\0';
         wclear(input_win); //will be refreshed next tick to undisplay the backspaced character
         wborder(input_win, '|', '|', '-', '-', '+', '+', '+', '+');
-      } else if (c != BACKSPACE && msg_buffer_pos < MSG_LENGTH - 1) {
+      } else if (c != BACKSPACE && msg_buffer_pos < MSG_DATA_MAX_LENGTH - 1) {
         msg_buffer[msg_buffer_pos] = c;
         msg_buffer[++msg_buffer_pos] = '\0';
       }
@@ -151,7 +153,7 @@ void client() {
     //That way, there's no busy waiting, and the window doesn't have to be re-drawn every single frame unnecessarily.
     //Might require some global / shared memory, but I think it'll be worth it.
     //Also, split the two functions up into their own files, for better organization.
-    if (recv(sock, &recv_message, msg_size, MSG_DONTWAIT) < 0) {
+    if (recv(sock, &recv_message, msg_length, MSG_DONTWAIT) < 0) {
       if (errno != EWOULDBLOCK) {
         perror("Error receiving message.");
         exit(1);
@@ -164,11 +166,11 @@ void client() {
       //copy recv_message into the current end of thelist
       if (rm_index == MAX_MESSAGES) {
         for (int i = 1; i < MAX_MESSAGES; i++) {
-          memcpy(&received_messages[i - 1], &received_messages[i], msg_size);
+          memcpy(&received_messages[i - 1], &received_messages[i], msg_length);
         }
-        memcpy(&received_messages[MAX_MESSAGES - 1], &recv_message, msg_size);
+        memcpy(&received_messages[MAX_MESSAGES - 1], &recv_message, msg_length);
       } else {
-        memcpy(&received_messages[rm_index], &recv_message, msg_size);
+        memcpy(&received_messages[rm_index], &recv_message, msg_length);
         rm_index++;
       }
 

@@ -1,12 +1,10 @@
-#include <sys/epoll.h>
 #include "moss.h"
+#include "bbst.h"
 
 
 //data that the server needs
-int active_socks[MAX_CLIENTS]; //turn into a BST or a hash table (Think im gonna go with a balanced BST)
-  //Review Data Structure Notes.
-  //sort by FD, include FD and color as node data
-int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to eacch client
+bbst_tree_t* active_sockets;
+int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to each client
 int sin_size = sizeof(struct sockaddr_in);
 int num_clients;
 int first_available_client;
@@ -15,7 +13,7 @@ int first_available_client;
 void client_handler(int sock) {
   msg_t recv_message;
 
-  if (recv(sock, &recv_message, msg_size, 0) < 0) {
+  if (recv(sock, &recv_message, msg_length, 0) < 0) {
     perror("Error receiving message.");
     exit(1);
   }
@@ -33,13 +31,7 @@ void client_handler(int sock) {
 
 
 void mass_send(msg_t* message) {
-  //turn into an in-order traversal of the tree
-  for (int i = 0; i < MAX_CLIENTS; i++) {
-    if (send(active_socks[i], message, msg_size, 0) < 0) {
-      perror("Error sending message.");
-      exit(1);
-    }
-  }
+  //(traverse the tree in order, send the message to each client)
 }
 
 
@@ -120,8 +112,7 @@ void server() {
         }
 
         printf("New connection from %s!\n", address_string);
-        //(insert new socket into the tree
-        active_socks[first_available_client] = temp_client_sock;
+        bbst_add(active_sockets, temp_client_sock);
         num_clients++;
         handler_event.events = EPOLLIN;
         handler_event.data.fd = temp_client_sock;
@@ -143,6 +134,5 @@ void server() {
 
 void close_client_socks() {
   //delete each member of the tree
-  for (int i = 0; i < MAX_CLIENTS; i++)
-    close(active_socks[i]);
+  //(in-order traversal, close the socket and delete the node)
 }
