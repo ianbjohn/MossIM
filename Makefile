@@ -6,13 +6,13 @@ CFLAGS       = -std=c99
 LIBS         = -lncurses
 
 PROGRAM     = MossIM
-INCLUDEPATHS = -I./include
-#clean this up with wildcards
-OBJSDIR = ./objs
-OBJS = $(wildcard $(OBJSDIR)/*.o)
+OBJS = main.o moss.o aes.o client.o server.o
 
 $(PROGRAM): $(OBJS)
-	$(CC) -o $(CFLAGS)
+	$(CC) -o $(PROGRAM) $(CFLAGS) $(OBJS) $(LIBS)
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
 
 clean:
 	rm -f $(OBJS) $(PROGRAM) *~
