@@ -3,9 +3,13 @@
   //i.e client #25 has socket 40162
 //BBSTs are guaranteed to be O(log_2 n) time, which is great
 
+#include <stddef.h>
+
 typedef struct bbst_node {
   int value;
-  struct node* parent, son, daughter; //left and right child nodes, respectively
+  struct bbst_node* parent;
+  struct bbst_node* son;       //left and right child nodes, respectively
+  struct bbst_node* daughter;
 } bbst_node_t;
 
 

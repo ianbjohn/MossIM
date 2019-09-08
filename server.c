@@ -3,7 +3,7 @@
 
 
 //data that the server needs
-bbst_tree_t* active_sockets;
+bbst_t* active_sockets;
 int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to each client
 int sin_size = sizeof(struct sockaddr_in);
 int num_clients;
@@ -22,7 +22,7 @@ void client_handler(int sock) {
     mass_send(&recv_message);
   else if (recv_message.msg_type == MT_LEAVE) {
     close(sock);
-    active_socks[0] = 0; //remove from tree
+    bbst_remove(active_sockets, sock);
     num_clients--;
     mass_send(&recv_message);
   } else if (recv_message.msg_type == MT_REG)
