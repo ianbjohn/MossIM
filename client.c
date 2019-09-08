@@ -88,8 +88,8 @@ void client() {
   struct tm *timer = localtime(&timething);
   memcpy(&send_message.time_sent, timer, sizeof(struct tm));
   //TODO: Might not actually need the message length in the structure field. Might be okay to just pass it to the send_msg argument.
-  send_message.length = msg_length;
-  if (send(sock, &send_message, msg_length, 0) < 0) {
+  send_message.length = msg_length - MSG_DATA_MAX_LENGTH;
+  if (send_msg(sock, &send_message, send_message.length) < 0) {
     perror("Error sending message.");
     exit(1);
   }
@@ -127,7 +127,7 @@ void client() {
         timer = localtime(&timething);
         memcpy(&send_message.time_sent, timer, sizeof(struct tm));
         send_message.length = msg_length - (MSG_DATA_MAX_LENGTH - msg_data_length);
-        send(sock, &send_message, msg_length, 0);
+        send_msg(sock, &send_message, send_message.length);
         if (leave == 1) {
           break;
         }

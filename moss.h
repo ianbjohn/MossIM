@@ -36,8 +36,8 @@ void server();
 void close_client_sockets();
 void mass_send(msg_t* message);
 int find_first_available_client();
-int send_msg(int sock, void* buffer, int buf_size, int flags);
-int recv_msg(int sock, void* buffer, int buf_size, int flags);
+int send_msg(int sock, void* buffer, int buf_size);
+int recv_msg(int sock, void* buffer, int buf_size);
 
 extern int msg_length;
 
