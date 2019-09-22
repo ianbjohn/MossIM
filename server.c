@@ -13,10 +13,12 @@ int first_available_client;
 void client_handler(int sock) {
   msg_t recv_message;
 
-  if (recv(sock, &recv_message, msg_length, 0) < 0) {
+  printf("Waiting for recv_msg...\n");
+  if (recv_msg(sock, &recv_message, msg_length) < 0) {
     perror("Error receiving message.");
     exit(1);
   }
+  printf("Received.\n");
 
   if (recv_message.msg_type == MT_JOIN)
     mass_send(&recv_message);
@@ -32,6 +34,11 @@ void client_handler(int sock) {
 
 void mass_send(msg_t* message) {
   //(traverse the tree in order, send the message to each client)
+  //for right now, just send to the first node to make sure things are working
+  if (send_msg(active_sockets->root->value, message, msg_length) < 0) {
+    perror("Error sending message.");
+    exit(1);
+  }
 }
 
 
