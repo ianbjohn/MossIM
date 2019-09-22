@@ -3,7 +3,7 @@
 
 
 //data that the server needs
-bbst_t* active_sockets;
+bbst_t active_sockets;
 int client_colors[MAX_CLIENTS]; //what color IDs (used in client.c) correspond to each client
 int sin_size = sizeof(struct sockaddr_in);
 int num_clients;
@@ -22,7 +22,7 @@ void client_handler(int sock) {
     mass_send(&recv_message);
   else if (recv_message.msg_type == MT_LEAVE) {
     close(sock);
-    bbst_remove(active_sockets, sock);
+    bbst_remove(&active_sockets, sock);
     num_clients--;
     mass_send(&recv_message);
   } else if (recv_message.msg_type == MT_REG)
@@ -33,9 +33,11 @@ void client_handler(int sock) {
 void mass_send(msg_t* message) {
   //(traverse the tree in order, send the message to each client)
   //for right now, just send to the first node to make sure things are working
-  if (send_msg(active_sockets->root->value, message, msg_length) < 0) {
-    perror("Error sending message.");
-    exit(1);
+  if (active_sockets.root != NULL) {
+    if (send_msg(active_sockets.root->value, message, message->length) < 0) {
+      perror("Error sending message.");
+      exit(1);
+    }
   }
 }
 
@@ -90,7 +92,7 @@ void server() {
   }
 
   //set up our balanced BST of active sockets
-  if (create_bbst(active_sockets) < 0) {
+  if (create_bbst(&active_sockets) < 0) {
     perror("Error creating BBST.");
     exit(1);
   }
@@ -123,7 +125,7 @@ void server() {
         }
 
         printf("New connection from %s!\n", address_string);
-        bbst_add(active_sockets, temp_client_sock);
+        bbst_add(&active_sockets, temp_client_sock);
         num_clients++;
         handler_event.events = EPOLLIN;
         handler_event.data.fd = temp_client_sock;

@@ -11,11 +11,6 @@
 #define BR_CORNER 188
 #define MAX_MESSAGES 30 //how many received messages can be displayed at any given time
 
-
-//used for testing to make sure client is receiving messages properly
-int count = 0;
-
-
 //Our thread for receiving data
 //args is just the socket FD
 void* client_read_handler(void* args) {
@@ -42,7 +37,6 @@ void* client_read_handler(void* args) {
       perror("Error receiving message.");
       exit(1);
     } else {
-      count++;
       wclear(message_win);
       wborder(message_win, '|', '|', '-', '-', '+', '+', '+', '+');
 
@@ -216,6 +210,5 @@ void client() {
   //close socket
   close(sock);
   endwin();
-  printf("%d\n", count);
   printf("Goodbye.\n");
 }
