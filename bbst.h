@@ -4,6 +4,7 @@
 //BBSTs are guaranteed to be O(log_2 n) time, which is great
 
 #include <stddef.h>
+#include <stdlib.h>
 
 typedef struct bbst_node {
   int value;
@@ -19,6 +20,7 @@ typedef struct bbst {
 } bbst_t;
 
 
+int create_bbst(bbst_t* tree);
 int bbst_add(bbst_t* tree, int value);
 int bbst_remove(bbst_t* tree, int value);
 bbst_node_t* bbst_search(bbst_t* tree, int value);

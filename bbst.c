@@ -1,7 +1,21 @@
 #include "bbst.h"
 
+
+int create_bbst(bbst_t* tree) {
+  tree = (bbst_t* ) malloc(sizeof(bbst_t));
+  if (tree == NULL)
+    return -1;
+
+  return 0;
+}
+
+
 int bbst_add(bbst_t* tree, int value) {
-  //nothing here yet
+  //nothing here yet, except add the value to the tree's root
+  if (tree->root == NULL)
+    tree->root = (bbst_node_t* ) malloc(sizeof(bbst_node_t));
+  tree->root->value = value;
+
   return -1;
 }
 

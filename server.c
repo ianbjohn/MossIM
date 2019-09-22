@@ -13,12 +13,10 @@ int first_available_client;
 void client_handler(int sock) {
   msg_t recv_message;
 
-  printf("Waiting for recv_msg...\n");
   if (recv_msg(sock, &recv_message, msg_length) < 0) {
     perror("Error receiving message.");
     exit(1);
   }
-  printf("Received.\n");
 
   if (recv_message.msg_type == MT_JOIN)
     mass_send(&recv_message);
@@ -88,6 +86,12 @@ void server() {
   handler_event.data.fd = sock;
   if (epoll_ctl(epfd, EPOLL_CTL_ADD, sock, &handler_event) < 0) {
     perror("epoll_ctl");
+    exit(1);
+  }
+
+  //set up our balanced BST of active sockets
+  if (create_bbst(active_sockets) < 0) {
+    perror("Error creating BBST.");
     exit(1);
   }
 

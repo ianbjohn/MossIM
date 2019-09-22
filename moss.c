@@ -19,12 +19,12 @@ int recv_msg(int sock, void* buffer, int buf_size) {
   //receive the first packet - the length field will tell us how many more bytes to wait for
   int count = recv(sock, buffer, buf_size, 0);
   int length = ((int* ) buffer)[0]; //extract the total length of the message
-  length -= count; //subtract what we just got
+  //length -= count; //subtract what we just got
 
-  while (1) {
+  while (length != count) {
     int r = recv(sock, buffer + count, buf_size, 0);
     if (r < 0) return -1;
-    if (r == 0) break;
+    //if (r == 0) break; //shouldn't ever happen
     count += r;
   }
 
