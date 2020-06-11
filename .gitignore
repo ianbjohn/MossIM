@@ -1,5 +1,4 @@
-*.o
-*.save
+obj/
 
 MossIM
 aes_test
